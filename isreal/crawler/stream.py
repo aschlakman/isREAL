@@ -8,15 +8,27 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 
-#  override tweepy.StreamListener to add logic to on_status
-class MyStreamListener(tweepy.StreamListener):
-    def on_status(self, status):
-        print('Tweet by: @' + status.user.screen_name, "Num of followers:" + str(status.user.followers_count))
-        print(status.created_at, status.text)
+class Crawler(object):
+    def __init__(self, on_status, keyword_manager=KeywordManager()):
+        """
+        Find statuses on twitter using keyword searches. on_status is called whenever a status is found
+        Example:
+        >>>def on_status(status):
+        >>>    print('Tweet by: @' + status.user.screen_name, "Num of followers:" + str(status.user.followers_count))
+        >>>c = Crawler(on_status)
 
-keyword_manager = KeywordManager()
+        :param on_status: function to call when a new status is found
+        :param keyword_manager: object in charge of supplying keywords to search
+        """
+        stream_listener = tweepy.StreamListener()
+        stream_listener.on_status = on_status
 
-myStreamListener = MyStreamListener()
-myStream = tweepy.Stream(auth=api.auth, listener=myStreamListener)
-myStream.filter(track=keyword_manager.track, follow=keyword_manager.follow, languages=keyword_manager.languages,
-                async=True)
+        self.stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
+        self.stream.filter(track=keyword_manager.track, follow=keyword_manager.follow,
+                           languages=keyword_manager.languages, async=True)
+
+    def disconnect(self):
+        """
+        Stop crawler
+        """
+        self.stream.disconnect()
