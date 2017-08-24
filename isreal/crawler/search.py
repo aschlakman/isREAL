@@ -7,16 +7,14 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
-MAX_ITEMS = 100
-
 
 class Crawler(object):
-    def __init__(self, keyword_manager=SearchKeywordManager()):
+    def __init__(self):
         """
         Find statuses using rest API
-        :param keyword_manager: object in charge of supplying keywords to search
         """
-        self.keyword_manager = keyword_manager
+        # object in charge of supplying keywords to search
+        self.keyword_manager = SearchKeywordManager()
 
     def search(self, result_type='popular'):
         """
@@ -30,14 +28,14 @@ class Crawler(object):
                                  ).items()
         return statuses
 
-if __name__ == '__main__':
-    """
-    Example script
-    """
-    c = Crawler()
-    found_statuses = c.search('recent')
-    for status in found_statuses:
-        print("=====================================")
-        print("@" + status.user.screen_name, "Retweets: " + str(status.retweet_count),
-              "Favorites: " + str(status.favorite_count), "Followers: " + str(status.user.followers_count))
-        print(status.text)
+    # Example script
+    # c = Crawler()
+    # # found_statuses = c.search('popular')
+    # found_statuses = [s for s in c.search('popular')] + [s for s in c.search('mixed')]
+    # found_statuses = found_statuses[:60]
+    # for status in found_statuses:
+    #     print(status.text, sep=',')
+    #     print("=====================================")
+    #     print("@" + status.user.screen_name, "Retweets: " + str(status.retweet_count),
+    #           "Favorites: " + str(status.favorite_count), "Followers: " + str(status.user.followers_count))
+    #     print(status.text)

@@ -42,10 +42,12 @@ class SearchKeywordManager(object):
         self.users = ['@freePalestine',
                       '@PalestineToday',
                       '@palestine',
-                      '@GlouthGraham',
+                      # '@GlouthGraham',
                       '@NationalSJP',
                       '@BDSmovement',
-                      '@Col_Connaughton']
+                      # '@Col_Connaughton'
+                      ]
+        self.users = []
         self.users = map(lambda username: 'from:' + username, self.users)
         self.lang = 'en'
 
@@ -55,7 +57,7 @@ class SearchKeywordManager(object):
         :return: query string
         """
         q = ' OR '.join(self.tags)
-        if self.tags and self.users:
-            q += ' OR '
-        q += ' OR '.join(self.users)
+        # if self.tags and self.users:
+        #     q += ' OR '
+        # q += ' OR '.join(self.users)
         return q
