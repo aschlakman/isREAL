@@ -1,15 +1,15 @@
 import tweepy
 
 from isreal.credentials import *
-from isreal.keywords import KeywordManager
+from isreal.keywords import StreamKeywordManager
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 
-class Crawler(object):
-    def __init__(self, on_status, keyword_manager=KeywordManager()):
+class StreamCrawler(object):
+    def __init__(self, on_status, keyword_manager=StreamKeywordManager()):
         """
         Find statuses on twitter using keyword searches. on_status is called whenever a status is found
         Example:
