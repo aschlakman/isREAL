@@ -32,6 +32,7 @@ class StatusInserter(object):
         status_data_dict['tags'] = [hashtag['text'] for hashtag in status.entities['hashtags']]
         status_data_dict['userId'] = status.user.id_str
         status_data_dict['searchType'] = 'mixed'
+        status_data_dict['nlpScore'] = self.get_nlp_score(status)
         return status_data_dict
 
     def write_status_to_db(self, status, search_type):
@@ -43,6 +44,10 @@ class StatusInserter(object):
         if search_type != 'mixed':
             data_to_write['searchType'] = 'popular'
         requests.post('{db_address}/posts/add'.format(db_address=self.db_address), json=data_to_write)
+
+    @staticmethod
+    def get_nlp_score(status):
+        return -1
 
     def write(self, status):
         dic = self.retrive_status_data(status)
