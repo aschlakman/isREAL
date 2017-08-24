@@ -1,7 +1,10 @@
+from datetime import datetime
+from time import sleep
+
 import tweepy
 import requests
 from isreal.credentials import consumer_key, consumer_secret, access_token, access_token_secret
-from isreal.crawler.stream import Crawler
+from isreal.crawler.search import Crawler
 
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -20,8 +23,7 @@ class StatusInserter(object):
         :return: dict
         """
         status_data_dict = dict()
-        status_data_dict['url'] = 'https://twitter.com/{username}/status/{id}'.format(username=status.user.screen_name,
-                                                                                      id=status.id_str)
+        status_data_dict['tweetId'] = status.id_str
         status_data_dict['likes'] = status.favorite_count
         status_data_dict['retweets'] = getattr(status, 'retweet_count', 0)
         status_data_dict['tweetPostingTime'] = status.created_at.strftime('%Y:%m:%d %H:%M:%S')
@@ -29,15 +31,17 @@ class StatusInserter(object):
         status_data_dict['authorDisplayName'] = status.user.screen_name
         status_data_dict['tags'] = [hashtag['text'] for hashtag in status.entities['hashtags']]
         status_data_dict['userId'] = status.user.id_str
-
+        status_data_dict['searchType'] = 'mixed'
         return status_data_dict
 
-    def write_status_to_db(self, status):
+    def write_status_to_db(self, status, search_type):
         """
         get a status representation of the tweet and insert to the joint DB
         :param status: Status (by Tweepy)
         """
         data_to_write = self.retrive_status_data(status=status)
+        if search_type != 'mixed':
+            data_to_write['searchType'] = 'popular'
         requests.post('{db_address}/posts/add'.format(db_address=self.db_address), json=data_to_write)
 
     def write(self, status):
@@ -45,14 +49,26 @@ class StatusInserter(object):
         print(dic)
 
     def work(self):
+        popular_count = 0
+        self.Crawler = Crawler()
         while True:
-            statuses_to_add =
+            if popular_count == 0:
+                search_type = 'popular'
+                popular_count = 100
+            else:
+                search_type = 'mixed'
+                popular_count -= 1
+            try:
+                statuses_to_add = self.Crawler.search(search_type)
+            except tweepy.RateLimitError:
+                sleep(15 * 60)
+
+            for status in statuses_to_add:
+                self.write_status_to_db(status, search_type)
 
 
-th = StatusesHandler()
+th = StatusInserter()
 th.work()
-# for tweet in tweepy.Cursor(api.search, q='isREALiBot').items(3):
-#     th.write(tweet)
 
 
 
