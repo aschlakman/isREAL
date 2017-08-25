@@ -24,6 +24,7 @@ class StatusInserter(object):
         """
         status_data_dict = dict()
         status_data_dict['tweetId'] = status.id_str
+        status_data_dict['text'] = status.text
         status_data_dict['likes'] = status.favorite_count
         status_data_dict['retweets'] = getattr(status, 'retweet_count', 0)
         status_data_dict['tweetPostingTime'] = status.created_at.strftime('%Y:%m:%d %H:%M:%S')
@@ -43,7 +44,10 @@ class StatusInserter(object):
         data_to_write = self.retrive_status_data(status=status)
         if search_type != 'mixed':
             data_to_write['searchType'] = 'popular'
-        requests.post('{db_address}/posts/add'.format(db_address=self.db_address), json=data_to_write)
+        response = requests.post('{db_address}/posts/add'.format(db_address=self.db_address), json=data_to_write)
+
+        print(str(response.content))
+        x = 5
 
     def write(self, status):
         dic = self.retrive_status_data(status)
