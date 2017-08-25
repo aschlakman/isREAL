@@ -5,6 +5,7 @@ import tweepy
 import requests
 from isreal.credentials import consumer_key, consumer_secret, access_token, access_token_secret
 from isreal.crawler.search import Crawler
+from isreal.keywords import DynamicSearchManager
 
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -14,7 +15,9 @@ api = tweepy.API(auth)
 
 class StatusInserter(object):
     def __init__(self):
-        self.db_address = 'http://localhost:8001'  # 'http://192.168.0.138:8001'
+        self.db_address = 'http://192.168.1.101:8002'  # 'http://192.168.0.138:8001'
+        self.Crawler = Crawler()
+        self.Crawler.keyword_manager = DynamicSearchManager()
 
     def retrive_status_data(self, status):
         """
@@ -44,10 +47,18 @@ class StatusInserter(object):
         data_to_write = self.retrive_status_data(status=status)
         if search_type != 'mixed':
             data_to_write['searchType'] = 'popular'
-        response = requests.post('{db_address}/posts/add'.format(db_address=self.db_address), json=data_to_write)
+        try:
+            if self.db_address:
+                response = requests.post('{db_address}/posts/add'.format(db_address=self.db_address), json=data_to_write)
+                print(str(response.content))
+            print("=====================================")
+            print("@" + status.user.screen_name, "Retweets: " + str(status.retweet_count),
+                  "Favorites: " + str(status.favorite_count), "Followers: " + str(status.user.followers_count))
+            print(status.text)
+            sleep(2)
 
-        print(str(response.content))
-        x = 5
+        except requests.exceptions.ConnectionError as e:
+            print("Got Connection Error", e)
 
     def write(self, status):
         dic = self.retrive_status_data(status)
@@ -55,7 +66,6 @@ class StatusInserter(object):
 
     def work(self):
         popular_count = 0
-        self.Crawler = Crawler()
         while True:
             if popular_count == 0:
                 search_type = 'popular'
@@ -66,14 +76,15 @@ class StatusInserter(object):
             try:
                 statuses_to_add = self.Crawler.search(search_type)
             except tweepy.RateLimitError:
+                print("Hit Rate Limit")
                 sleep(15 * 60)
 
             for status in statuses_to_add:
                 self.write_status_to_db(status, search_type)
 
-
-th = StatusInserter()
-th.work()
+if __name__ == '__main__':
+    th = StatusInserter()
+    th.work()
 
 
 

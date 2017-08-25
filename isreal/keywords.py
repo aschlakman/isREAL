@@ -1,6 +1,27 @@
 """
 Handle search keywords for the crawler
 """
+import requests
+
+
+DEFAULT_TAGS = ['#GazaPrison',
+                '#freePalestine',
+                # '#BDS -#BDSfail',
+                '#iamgaza',
+                '#PrayForPalestine',
+                '#GazaUnlivable',
+                '#Boycottisrael',
+                '#FuckIsrael']
+
+
+class TagGetter(object):
+    def __init__(self):
+        self.db_address = 'http://192.168.1.101:8002'
+
+    def get_tags(self, limit=10):
+        response = requests.post('{db_address}/tags/get'.format(db_address=self.db_address))
+        tags = ['#' + r["_id"] for r in response.json()["data"] if r["_id"].lower() not in ["israel"]]
+        return tags[:limit]
 
 
 class StreamKeywordManager(object):
@@ -32,7 +53,8 @@ class SearchKeywordManager(object):
         """
         Manage the parameters used to search and stream new statuses
         """
-        self.tags = ['#freePalestine',
+        self.tags = ['#GazaPrison',
+                     '#freePalestine',
                      # '#BDS -#BDSfail',
                      '#iamgaza',
                      '#PrayForPalestine',
@@ -61,3 +83,13 @@ class SearchKeywordManager(object):
         #     q += ' OR '
         # q += ' OR '.join(self.users)
         return q
+
+
+class DynamicSearchManager(SearchKeywordManager):
+    def __init__(self):
+        super(DynamicSearchManager, self).__init__()
+        self.tag_getter = TagGetter()
+
+    def q(self):
+        self.tags = self.tag_getter.get_tags()
+        return super(DynamicSearchManager, self).q()
