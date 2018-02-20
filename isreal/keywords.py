@@ -16,7 +16,7 @@ DEFAULT_TAGS = ['#GazaPrison',
 
 class TagGetter(object):
     def __init__(self):
-        self.db_address = 'http://192.168.1.101:8002'
+        self.db_address = 'http://isreal-app.herokuapp.com'
 
     def get_tags(self, limit=10):
         response = requests.post('{db_address}/tags/get'.format(db_address=self.db_address))

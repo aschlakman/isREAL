@@ -15,7 +15,7 @@ api = tweepy.API(auth)
 
 class StatusInserter(object):
     def __init__(self):
-        self.db_address = 'http://192.168.1.101:8002'  # 'http://192.168.0.138:8001'
+        self.db_address = 'http://isreal-app.herokuapp.com'  # 'http://192.168.0.138:8001'
         self.Crawler = Crawler()
         self.Crawler.keyword_manager = DynamicSearchManager()
 
